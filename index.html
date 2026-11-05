@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sample to WAV</title>
+<link rel="stylesheet" href="style.css">
+<main><span class="badge">SAMPLE TO WAV</span><h1>วางไฟล์ แล้วรับเสียง WAV</h1><p>แยกเสียงต้นฉบับจาก SoundFont โดยประมวลผลในเครื่องของคุณ</p>
+<label id="drop" tabindex="0"><strong>ลากไฟล์มาวางที่นี่</strong><span>หรือคลิกเพื่อเลือกหลายไฟล์</span><input id="files" type="file" multiple accept=".sf2,.sfz,.wav,.aif,.aiff,.mp3,.ogg,.flac,.m4a,.aac"></label>
+<p class="hint">SF2: แยก samples รวม 16/24-bit • SFZ: อ่านรายการเสียง (เลือกไฟล์เสียงที่อ้างอิงมาด้วย)<br>WAV: คัดลอกต้นฉบับ • AIFF, MP3, OGG, FLAC, M4A, AAC: แปลงเมื่อเบราว์เซอร์รองรับ</p>
+<p class="hint">เสียงที่แยกจาก SF2 อาจไม่ครบทุกคีย์ เพราะหลายคีย์ใช้ sample เดียวกัน และไม่รวมเอฟเฟกต์จากเครื่องดนตรี<br>NKI / NKM / SF3 และไฟล์ที่เข้ารหัสยังไม่รองรับ</p>
+<div class="toolbar"><span id="status" role="status" aria-live="polite">พร้อมใช้งาน</span><button id="download" disabled>ดาวน์โหลด WAV ทั้งหมด (.zip)</button></div><ul id="results"></ul>
+</main><script type="module" src="app.js"></script></html>
