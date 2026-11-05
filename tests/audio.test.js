@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {extractSF2,sfzSamples,pcmFromAudio} from '../audio.js';
 import {zip} from '../zip.js';
 import {writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 function chunk(id,data){const b=Buffer.alloc(8+data.length+(data.length%2));b.write(id);b.writeUInt32LE(data.length,4);data.copy(b,8);return b;}
 function fixture(bits=16){
  const h=Buffer.alloc(92);h.write('Piano');h.writeUInt32LE(0,20);h.writeUInt32LE(3,24);h.writeUInt32LE(22050,36);h[40]=60;h.writeUInt16LE(1,44);h.write('EOS',46);
@@ -32,6 +34,6 @@ test('decoded stereo interleaves and clips samples',()=>{
 });
 test('ZIP exports files for independent verification',async()=>{
  const z=zip([{name:'เสียง.wav',data:extractSF2(fixture())[0].data}]);
- await writeFile('/tmp/wav-test.zip',new Uint8Array(await z.arrayBuffer()));
+ await writeFile(join(tmpdir(),'wav-test.zip'),new Uint8Array(await z.arrayBuffer()));
  assert.equal(new DataView(await z.arrayBuffer()).getUint32(0,true),0x04034b50);
 });

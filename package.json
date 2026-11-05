@@ -1,1 +1,40 @@
-{"name":"sample-to-wav","private":true,"type":"module","scripts":{"start":"python3 -m http.server 8000 --bind 0.0.0.0","test":"node --test"}}
+{
+  "name": "sample-to-wav",
+  "version": "1.0.0",
+  "description": "Extract SoundFont samples to WAV on your computer",
+  "author": "cushyam555",
+  "private": true,
+  "type": "module",
+  "main": "desktop.cjs",
+  "scripts": {
+    "start": "electron .",
+    "start:web": "python3 -m http.server 8000 --bind 0.0.0.0",
+    "test": "node tests/audio.test.js",
+    "dist:win": "electron-builder --win portable --x64"
+  },
+  "build": {
+    "appId": "com.cushyam555.sampletowav",
+    "productName": "Sample to WAV",
+    "files": [
+      "desktop.cjs",
+      "index.html",
+      "style.css",
+      "app.js",
+      "audio.js",
+      "zip.js",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": false
+    },
+    "artifactName": "Sample-to-WAV-${version}-Windows-x64.${ext}"
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
+  }
+}
