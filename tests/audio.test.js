@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {extractSF2,sfzSamples,pcmFromAudio} from '../audio.js';
+import {extractSF2,extractSoundFont,soundFontSamples,sfzSamples,pcmFromAudio} from '../audio.js';
 import {zip} from '../zip.js';
-import {writeFile} from 'node:fs/promises';
+import {writeFile,readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 function chunk(id,data){const b=Buffer.alloc(8+data.length+(data.length%2));b.write(id);b.writeUInt32LE(data.length,4);data.copy(b,8);return b;}
@@ -36,4 +36,26 @@ test('ZIP exports files for independent verification',async()=>{
  const z=zip([{name:'เสียง.wav',data:extractSF2(fixture())[0].data}]);
  await writeFile(join(tmpdir(),'wav-test.zip'),new Uint8Array(await z.arrayBuffer()));
  assert.equal(new DataView(await z.arrayBuffer()).getUint32(0,true),0x04034b50);
+});
+test('SF3 uses byte offsets and separates two embedded Ogg streams',async()=>{
+ const b=await readFile(new URL('./fixtures/two-tones.sf3',import.meta.url));
+ const samples=soundFontSamples(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));
+ assert.equal(samples.length,2);assert.equal(samples[1].name,'Tone2');
+ assert.equal(new TextDecoder().decode(samples[0].compressed.slice(0,4)),'OggS');
+ assert.deepEqual(new Uint8Array(samples[0].compressed),new Uint8Array(samples[1].compressed));
+ const rates=[];
+ const out=await extractSoundFont(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),async(bytes,rate)=>{
+  rates.push(rate);return {length:2,numberOfChannels:1,sampleRate:rate,getChannelData:()=>new Float32Array([-.25,.25])};
+ });
+ assert.deepEqual(rates,[22050,22050]);assert.equal(out.length,2);assert.equal(new DataView(out[1].data.buffer).getUint32(24,true),22050);
+});
+test('SF3 decoder failures are reported rather than exporting corrupt PCM',async()=>{
+ const b=await readFile(new URL('./fixtures/two-tones.sf3',import.meta.url));
+ const out=await extractSoundFont(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),async()=>{throw Error('invalid ogg');});
+ assert.equal(out.length,2);assert.match(out[0].error,/invalid ogg/);assert.equal(out[0].data,undefined);
+});
+test('ROM samples are identified without pretending to contain audio',()=>{
+ const b=fixture();const v=new DataView(b);const bytes=new Uint8Array(b);
+ const p=Buffer.from(bytes).indexOf('shdr')+8;v.setUint16(p+44,0x8001,true);
+ assert.match(extractSF2(b)[0].error,/ROM/);
 });

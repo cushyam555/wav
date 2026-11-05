@@ -20,7 +20,7 @@ export function wav(pcm, rate, channels = 1, bits = 16) {
   v.setUint16(32,channels*bits/8,true); v.setUint16(34,bits,true);
   str(36,'data'); v.setUint32(40,pcm.length,true); out.set(pcm,44); return out;
 }
-export function extractSF2(buffer) {
+export function soundFontSamples(buffer) {
   const v = new DataView(buffer);
   if (v.byteLength < 12 || ascii(v,0,4)!=='RIFF' || ascii(v,8,4)!=='sfbk') throw Error('ไม่ใช่ไฟล์ SF2 แบบ RIFF sfbk');
   const end=v.getUint32(4,true)+8;
@@ -37,7 +37,13 @@ export function extractSF2(buffer) {
     const name=ascii(v,p,20).split('\0')[0].trim() || 'sample';
     const start=v.getUint32(p+20,true), stop=v.getUint32(p+24,true), rate=v.getUint32(p+36,true), type=v.getUint16(p+44,true);
     if(type&0x8000) { results.push({name,error:'ROM sample ไม่มีเสียงฝังในไฟล์'}); continue; }
-    if(![1,2,4,8].includes(type)) throw Error('รูปแบบ sample ไม่รองรับ (อาจเป็น SF3)');
+    if(![1,2,4,8].includes(type & ~0x10)) throw Error('รูปแบบ sample ไม่รองรับ');
+    if(type & 0x10) {
+      if(start>=stop || stop>smpl.end-smpl.start) throw Error('ตำแหน่ง SF3 sample ไม่ถูกต้อง: '+name);
+      const compressed=buffer.slice(smpl.start+start,smpl.start+stop);
+      if(compressed.byteLength<4 || ascii(new DataView(compressed),0,4)!=='OggS') throw Error('SF3 sample ไม่มีข้อมูล Ogg Vorbis: '+name);
+      results.push({name,compressed,rate,rootKey:v.getUint8(p+40)}); continue;
+    }
     if(start>=stop || stop*2>smpl.end-smpl.start) throw Error('ตำแหน่ง sample ไม่ถูกต้อง: '+name);
     if(sm24 && stop>sm24.end-sm24.start) throw Error('ข้อมูล 24-bit ไม่สมบูรณ์');
     const bits=sm24?24:16, pcm=new Uint8Array((stop-start)*bits/8);
@@ -46,6 +52,22 @@ export function extractSF2(buffer) {
       pcm[j++]=v.getUint8(smpl.start+i*2); pcm[j++]=v.getUint8(smpl.start+i*2+1);
     }
     results.push({name,data:wav(pcm,rate,1,bits),note:`${rate} Hz · ${bits}-bit · ${type===2?'ช่องขวา':type===4?'ช่องซ้าย':'mono'} · root key ${v.getUint8(p+40)}`});
+  }
+  return results;
+}
+export function extractSF2(buffer) {
+  const samples=soundFontSamples(buffer);
+  if(samples.some(s=>s.compressed)) throw Error('ไฟล์นี้มี SF3 samples ต้องใช้ตัวถอดรหัส Ogg');
+  return samples;
+}
+export async function extractSoundFont(buffer, decode) {
+  const results=[];
+  for(const sample of soundFontSamples(buffer)) {
+    if(!sample.compressed) {results.push(sample);continue;}
+    try {
+      const audio=await decode(sample.compressed,sample.rate);
+      results.push({name:sample.name,data:pcmFromAudio(audio),note:`SF3 → PCM 16-bit · ${audio.sampleRate} Hz · ${audio.numberOfChannels} ช่อง · root key ${sample.rootKey}`});
+    } catch(e) {results.push({name:sample.name,error:`ถอดรหัส SF3 ไม่สำเร็จ: ${e.message}`});}
   }
   return results;
 }

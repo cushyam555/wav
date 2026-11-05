@@ -1,9 +1,43 @@
 <!doctype html>
-<html lang="th"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'none'; object-src 'none'; base-uri 'none'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sample to WAV</title>
+<html lang="th"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sample to WAV</title>
 <link rel="stylesheet" href="style.css">
-<main><span class="badge">SAMPLE TO WAV</span><h1>วางไฟล์ แล้วรับเสียง WAV</h1><p>แยกเสียงต้นฉบับจาก SoundFont โดยประมวลผลในเครื่องของคุณ</p>
-<label id="drop" tabindex="0"><strong>ลากไฟล์มาวางที่นี่</strong><span>หรือคลิกเพื่อเลือกหลายไฟล์</span><input id="files" type="file" multiple accept=".sf2,.sfz,.wav,.aif,.aiff,.mp3,.ogg,.flac,.m4a,.aac"></label>
-<p class="hint">SF2: แยก samples รวม 16/24-bit • SFZ: อ่านรายการเสียง (เลือกไฟล์เสียงที่อ้างอิงมาด้วย)<br>WAV: คัดลอกต้นฉบับ • AIFF, MP3, OGG, FLAC, M4A, AAC: แปลงเมื่อเบราว์เซอร์รองรับ</p>
-<p class="hint">เสียงที่แยกจาก SF2 อาจไม่ครบทุกคีย์ เพราะหลายคีย์ใช้ sample เดียวกัน และไม่รวมเอฟเฟกต์จากเครื่องดนตรี<br>NKI / NKM / SF3 และไฟล์ที่เข้ารหัสยังไม่รองรับ</p>
+<main><span class="badge">SAMPLE TO WAV · 1.1</span><h1>แยกเสียง หรือบันทึกครบทุกคีย์</h1><p>เลือกวิธีทำงานตามชนิดเครื่องดนตรี ประมวลผลในเครื่องของคุณ</p>
+<nav aria-label="โหมดทำงาน"><button id="tab-extract" aria-pressed="true">แยกไฟล์ SF2 / SF3</button><button id="tab-kontakt" aria-pressed="false">บันทึกผ่าน Kontakt</button></nav>
+<section id="extract-panel">
+<label id="drop" tabindex="0"><strong>ลากไฟล์มาวางที่นี่</strong><span>หรือคลิกเพื่อเลือกหลายไฟล์</span><input id="files" type="file" multiple accept=".sf2,.sf3,.sfz,.nki,.nkm,.wav,.aif,.aiff,.mp3,.ogg,.flac,.m4a,.aac"></label>
+<p class="hint">SF2: แยก samples รวม 16/24-bit • SF3: ถอด Ogg Vorbis เป็น WAV 16-bit • SFZ: เลือกไฟล์เสียงที่อ้างอิงมาด้วย<br>WAV: คัดลอกต้นฉบับ • AIFF, MP3, OGG, FLAC, M4A, AAC: แปลงเมื่อเบราว์เซอร์รองรับ</p>
+<p class="hint">SF2/SF3 แยก samples ต้นฉบับ ไม่ได้สร้างเพิ่มครบทุกคีย์หรือรวมเอฟเฟกต์<br>NKI / NKM: โหลดใน Kontakt แล้วเลือกโหมดบันทึกผ่าน Kontakt · ROM ที่ไม่มีเสียงฝังอยู่ต้องใช้แหล่งเสียงต้นฉบับ</p>
 <div class="toolbar"><span id="status" role="status" aria-live="polite">พร้อมใช้งาน</span><button id="download" disabled>ดาวน์โหลด WAV ทั้งหมด (.zip)</button></div><ul id="results"></ul>
-</main><script type="module" src="app.js"></script></html>
+</section>
+<section id="kontakt-panel" hidden>
+<h2>Kontakt → WAV แยกคีย์</h2>
+<p>เปิด Kontakt ในเครื่อง โหลด NKI หรือ NKM ที่คุณมีสิทธิ์ใช้งาน แล้วให้โปรแกรมนี้ส่ง MIDI และบันทึกเสียงกลับมา ไม่ต้องแยกไฟล์ภายใน Kontakt</p>
+<details open><summary>เชื่อมต่อครั้งแรก</summary><ol>
+<li>ติดตั้งและเปิด Kontakt กับพอร์ต MIDI เสมือน เช่น loopMIDI แล้วสร้างพอร์ตชื่อ “SampleToWAV”</li>
+<li>ใน Kontakt: เปิดพอร์ตนี้เป็น MIDI input เลือก channel ของเครื่องดนตรีที่ต้องการ แล้วตั้ง Audio เป็น WASAPI/shared และใช้อุปกรณ์ output ปกติของ Windows</li>
+<li>กดค้นหา MIDI เลือกพอร์ตเดียวกัน เลือกบันทึกเสียงระบบ แล้วกดทดสอบ ต้องได้ยินเสียงในไฟล์ทดสอบก่อนเริ่มทั้งชุด</li>
+<li>เลือกโฟลเดอร์ ตั้งช่วงคีย์/velocity/ระยะเวลา แล้วเริ่มบันทึก เสร็จแล้ว WAV และ manifest.json อยู่ในโฟลเดอร์ย่อยที่โปรแกรมสร้างให้</li></ol>
+<p class="hint">เสียงระบบจะรวมเสียงอื่นที่ดังระหว่างบันทึกด้วย กรุณาปิดเพลงและการแจ้งเตือน หากใช้ ASIO ให้เปลี่ยนเป็น shared output หรือเลือก audio input ที่รับ loopback จาก Kontakt จริง ๆ การบันทึกใช้เวลาตามจริง · NKM ที่มีหลายเครื่อง: เลือก channel เพื่อแยกเครื่อง หรือใช้ Omni เพื่อบันทึกเสียงรวมตามการตั้งค่า Kontakt</p></details>
+<p id="desktop-note" class="hint"></p>
+<div class="grid">
+<label>MIDI output <select id="midi-output"><option value="">กดค้นหา MIDI ก่อน</option></select></label>
+<label>MIDI channel (1–16)<input id="midi-channel" type="number" min="1" max="16" value="1"></label>
+<label>แหล่งบันทึกเสียง<select id="audio-source"><option value="system">เสียงระบบ Windows (loopback)</option></select></label>
+<label>โน้ตทดสอบ (MIDI 0–127)<input id="test-note" type="number" min="0" max="127" value="60"></label>
+<label>คีย์เริ่ม (60 = C4)<input id="note-start" type="number" min="0" max="127" value="48"></label>
+<label>คีย์สุดท้าย<input id="note-end" type="number" min="0" max="127" value="72"></label>
+<label>Velocity (คั่นด้วยจุลภาค)<input id="velocities" type="text" value="100" placeholder="เช่น 40,80,120"></label>
+<label>จำนวนรอบต่อคีย์/velocity<input id="repeats" type="number" min="1" max="8" value="1"></label>
+<label>กดคีย์ค้าง (วินาที)<input id="hold" type="number" min="0.1" max="30" step="0.1" value="2"></label>
+<label>เก็บเสียงหลังปล่อยคีย์ (วินาที)<input id="tail" type="number" min="0.1" max="30" step="0.1" value="2"></label>
+<label>พักระหว่างเสียง (วินาที)<input id="gap" type="number" min="0.1" max="10" step="0.1" value="0.5"></label>
+</div>
+<p id="estimate" class="hint"></p>
+<div class="toolbar"><button id="refresh-midi">ค้นหา MIDI / ช่องเสียง</button><button id="test-kontakt">ทดสอบเสียง 1 คีย์</button><button id="choose-folder">เลือกโฟลเดอร์ WAV</button></div>
+<p id="folder-name" class="hint">ยังไม่เลือกโฟลเดอร์</p>
+<div class="toolbar"><button id="start-kontakt">เริ่มบันทึกทุกคีย์</button><button id="stop-kontakt" disabled>หยุด / ปิดโน้ตทั้งหมด</button></div>
+<p id="kontakt-status" role="status" aria-live="polite">ยังไม่เชื่อมต่อ Kontakt</p><progress id="record-progress" max="1" value="0"></progress>
+<audio id="test-playback" controls hidden></audio><ul id="record-results"></ul>
+<p class="hint">ผลลัพธ์ PCM WAV stereo 16-bit ตาม sample rate ที่อุปกรณ์บันทึกใช้ มีช่วงนำเสียง 0.15 วินาที ระบบหยุดเมื่อได้เสียงเงียบหรืออุปกรณ์หลุด ไม่ตรวจจับ articulation หรือเปลี่ยน preset อัตโนมัติ หากต้องการเทคนิคอื่นให้ตั้งใน Kontakt แล้วบันทึกแยกชุด</p>
+</section>
+</main><script type="module" src="app.js"></script><script type="module" src="kontakt.js"></script></html>

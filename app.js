@@ -1,4 +1,4 @@
-import {extractSF2,sfzSamples,pcmFromAudio} from './audio.js';
+import {extractSoundFont,sfzSamples,pcmFromAudio} from './audio.js';
 import {zip} from './zip.js';
 const input=document.querySelector('#files'),drop=document.querySelector('#drop'),list=document.querySelector('#results'),status=document.querySelector('#status'),download=document.querySelector('#download');
 let outputs=[],urls=[],busy=false;
@@ -28,7 +28,14 @@ async function run(files){
     for(const file of files){
       status.textContent=`กำลังอ่าน ${file.name}`;await new Promise(r=>setTimeout(r,0));
       try{
-        if(/\.sf2$/i.test(file.name)){for(const s of extractSF2(await file.arrayBuffer()))add(file.name,s);}
+        if(/\.sf[23]$/i.test(file.name)){
+          const samples=await extractSoundFont(await file.arrayBuffer(),async (bytes,rate)=>{
+            const ctx=new OfflineAudioContext(1,1,rate);
+            return ctx.decodeAudioData(bytes);
+          });
+          for(const s of samples)add(file.name,s);
+        }
+        else if(/\.(nki|nkm)$/i.test(file.name)) row(`${file.name}: เปิดไฟล์นี้ใน Kontakt แล้วใช้แท็บ “บันทึกผ่าน Kontakt” ด้านบน`,true);
         else if(/\.sfz$/i.test(file.name)){
           const paths=sfzSamples(await file.text());if(!paths.length)throw Error('ไม่พบ sample ใน SFZ');
           for(const path of paths){

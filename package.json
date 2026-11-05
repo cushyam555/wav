@@ -1,6 +1,6 @@
 {
   "name": "sample-to-wav",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Extract SoundFont samples to WAV on your computer",
   "author": "cushyam555",
   "private": true,
@@ -9,7 +9,7 @@
   "scripts": {
     "start": "electron .",
     "start:web": "python3 -m http.server 8000 --bind 0.0.0.0",
-    "test": "node tests/audio.test.js",
+    "test": "node tests/audio.test.js && node tests/recording.test.js",
     "dist:win": "electron-builder --win portable --x64"
   },
   "build": {
@@ -17,11 +17,15 @@
     "productName": "Sample to WAV",
     "files": [
       "desktop.cjs",
+      "preload.cjs",
       "index.html",
       "style.css",
       "app.js",
       "audio.js",
       "zip.js",
+      "kontakt.js",
+      "recording.js",
+      "capture-worklet.js",
       "package.json"
     ],
     "directories": {
