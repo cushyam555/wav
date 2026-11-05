@@ -6,6 +6,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   windows:
     runs-on: windows-latest
@@ -17,7 +20,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run dist:win
+      - run: npm run dist:win -- --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - uses: actions/upload-artifact@v4
@@ -25,3 +28,25 @@ jobs:
           name: Sample-to-WAV-Windows-x64
           path: dist/*.exe
           if-no-files-found: error
+  release:
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Sample-to-WAV-Windows-x64
+          path: dist
+      - name: Publish downloadable Windows release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          tag="portable-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          gh release create "$tag" dist/*.exe \
+            --target "$GITHUB_SHA" \
+            --title "Sample to WAV — Windows portable (build ${GITHUB_RUN_NUMBER})" \
+            --notes "Download the .exe under Assets and open it on Windows 10/11 x64. No installer, Node.js or Python required. Unsigned application."

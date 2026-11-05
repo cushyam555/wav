@@ -4,7 +4,9 @@
 
 ## ใช้งานบน Windows โดยไม่ติดตั้ง
 
-รองรับ Windows 10/11 แบบ x64 ดาวน์โหลดจากหน้า Actions ของ GitHub เลือกงาน **Build Windows portable** ที่สำเร็จ แล้วดาวน์โหลด artifact **Sample-to-WAV-Windows-x64** (ต้องลงชื่อเข้าใช้ GitHub) แตก ZIP แล้วเปิด `Sample-to-WAV-1.0.0-Windows-x64.exe` ได้ทันที ลาก SF2 มาวางและกดดาวน์โหลด WAV ไม่ต้องติดตั้ง Node.js, Python หรือเปิดเว็บเซิร์ฟเวอร์
+รองรับ Windows 10/11 แบบ x64 ไปที่ [GitHub Releases](https://github.com/cushyam555/wav/releases/latest) แล้วดาวน์โหลด `Sample-to-WAV-1.0.0-Windows-x64.exe` ในหัวข้อ Assets เปิดใช้งานได้ทันที ลาก SF2 มาวางและกดดาวน์โหลด WAV ไม่ต้องติดตั้ง Node.js, Python หรือเปิดเว็บเซิร์ฟเวอร์ หาก repository เป็น private ต้องลงชื่อเข้าใช้บัญชีที่เข้าถึงได้
+
+ทุกครั้งที่ push เข้า main ระบบ GitHub Actions จะทดสอบ สร้าง EXE บน Windows และเผยแพร่ release พร้อมไฟล์ EXE อัตโนมัติ หากยังไม่มี release ให้ตรวจผลที่ [Actions](https://github.com/cushyam555/wav/actions/workflows/windows.yml) ต้องรอขั้นตอน Publish downloadable Windows release สำเร็จก่อนดาวน์โหลด
 
 ไฟล์โปรแกรมยังไม่ได้ลงลายเซ็นดิจิทัล Windows อาจแสดงข้อความเตือนผู้เผยแพร่ที่ไม่รู้จัก ชุดเสียงยังมีข้อจำกัดตามรายการด้านล่าง
 
